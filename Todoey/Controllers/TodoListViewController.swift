@@ -9,48 +9,41 @@
 import UIKit
 
 class TodoListViewController:UITableViewController{
+    
     var itemArray = [Item]()
     var defaults=UserDefaults.standard
+    let dataFilePath=FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        .first?.appendingPathComponent("Items.plist")
+    
     override func viewDidLoad() {
         
         super.viewDidLoad()
-        if let items = defaults.array(forKey: "TodoListArray") as? [String]{
+        
+        
+        print(dataFilePath!)
+        if (defaults.array(forKey: "TodoListArray") as? [String]) != nil{
             
-            let newItem = Item()
-            newItem.title="benji medicine"
-            itemArray.append(newItem)
+//            let newItem = Item()
+//            newItem.title="benji medicine"
+//            itemArray.append(newItem)
+//
+//
+//            let newItem2 = Item()
+//            newItem2.title="benji medicine"
+//            itemArray.append(newItem2)
+//
+//            let newItem3 = Item()
+//            newItem3.title="benji medicine"
+//            itemArray.append(newItem3)
+//
+//            let newItem4 = Item()
+//            newItem4.title="benji medicine"
+//            itemArray.append(newItem4)
+//            let newItem5 = Item()
+//            newItem5.title="benji medicine"
+//            itemArray.append(newItem5)
             
-            
-            let newItem2 = Item()
-            newItem2.title="benji medicine"
-            itemArray.append(newItem2)
-            
-            let newItem3 = Item()
-            newItem3.title="benji medicine"
-            itemArray.append(newItem3)
-            
-            let newItem4 = Item()
-            newItem4.title="benji medicine"
-            itemArray.append(newItem4)
-            let newItem5 = Item()
-            newItem5.title="benji medicine"
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
-            itemArray.append(newItem5)
+            loadData()
             
             
             
@@ -63,12 +56,12 @@ class TodoListViewController:UITableViewController{
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell=tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell",for: indexPath)
-     
+        
         let item=itemArray[indexPath.row]
-             
+        
         cell.textLabel?.text=item.title
         
-       
+        
         if item.done==true {
             cell.accessoryType = .checkmark
         }else{
@@ -95,7 +88,10 @@ class TodoListViewController:UITableViewController{
             
         }
         tableView.reloadData()
+        
         tableView.deselectRow(at: indexPath, animated: true)
+
+        self.saveItems()
     }
     
     @IBAction func addButtonPressed(_ sender: Any) {
@@ -112,8 +108,8 @@ class TodoListViewController:UITableViewController{
             newItem.title=textField.text!
             self.itemArray.append(newItem)
             
-            self.tableView.reloadData()
-            self.defaults.set(self.itemArray,forKey: "TodoListArray")
+            self.saveItems()
+            // self.defaults.set(self.itemArray,forKey: "TodoListArray")
             
         }
         
@@ -124,6 +120,28 @@ class TodoListViewController:UITableViewController{
         
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
+    }
+    
+    func saveItems(){
+        let encoder=PropertyListEncoder()
+                 do{
+                     let data = try encoder.encode(self.itemArray)
+                     try data.write(to: self.dataFilePath!)
+                 }catch{
+                     print("Error encoding")
+                 }
+                 self.tableView.reloadData()
+    }
+    
+    func loadData(){
+        if let data=try? Data(contentsOf: dataFilePath!){
+            let decoder = PropertyListDecoder()
+            do{
+                itemArray =  try decoder.decode([Item].self, from: data)
+            }catch{
+                print("decode error")
+            }
+        }
     }
 }
 
